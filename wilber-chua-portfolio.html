@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wilber Chua Turpo — Gestor Público</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a0e1a;
+    --navy2: #111827;
+    --gold: #c9a84c;
+    --gold2: #e8c97a;
+    --ice: #e8edf5;
+    --mist: #8a96aa;
+    --white: #f5f7fa;
+    --accent: #2563eb;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--ice);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom Cursor */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    transform: translate(-50%, -50%);
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s;
+    transform: translate(-50%, -50%);
+    opacity: 0.6;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9000;
+    opacity: 0.5;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.5rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(10,14,26,0.95), transparent);
+    backdrop-filter: blur(2px);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex; gap: 2.5rem; list-style: none;
+  }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--mist);
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute; bottom: -4px; left: 0;
+    width: 0; height: 1px;
+    background: var(--gold);
+    transition: width 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a:hover::after { width: 100%; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 4rem 4rem 6rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero-tag span {
+    font-size: 0.72rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .hero-tag::before {
+    content: '';
+    display: block;
+    width: 40px; height: 1px;
+    background: var(--gold);
+  }
+
+  .hero-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3.5rem, 6vw, 6rem);
+    font-weight: 700;
+    line-height: 1.0;
+    color: var(--white);
+    opacity: 0;
+    animation: fadeUp 0.9s 0.4s forwards;
+  }
+  .hero-name em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.2rem, 2vw, 1.8rem);
+    letter-spacing: 5px;
+    color: var(--mist);
+    margin-top: 1rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.55s forwards;
+  }
+
+  .hero-desc {
+    max-width: 420px;
+    color: var(--mist);
+    font-size: 0.92rem;
+    line-height: 1.8;
+    margin-top: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.7s forwards;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 3rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.85s forwards;
+  }
+
+  .btn-primary {
+    padding: 0.9rem 2.5rem;
+    background: var(--gold);
+    color: var(--navy);
+    text-decoration: none;
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--gold2);
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+  .btn-primary:hover::before { transform: translateX(0); }
+  .btn-primary span { position: relative; z-index: 1; }
+
+  .btn-outline {
+    padding: 0.9rem 2.5rem;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.3s;
+  }
+  .btn-outline:hover {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.07);
+  }
+
+  .hero-right {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .hero-photo-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .hero-photo-bg {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    height: 90%;
+    background: linear-gradient(160deg, rgba(37,99,235,0.08) 0%, rgba(201,168,76,0.06) 100%);
+    clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%);
+  }
+
+  .hero-photo {
+    position: relative;
+    z-index: 2;
+    width: 78%;
+    max-width: 420px;
+    filter: grayscale(15%) contrast(1.05);
+    mask-image: linear-gradient(to top, transparent 0%, black 20%);
+    -webkit-mask-image: linear-gradient(to top, transparent 0%, black 20%);
+    opacity: 0;
+    animation: fadeIn 1.2s 0.6s forwards;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  .hero-gold-line {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+    opacity: 0.3;
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 2.5rem; left: 6rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--mist);
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeIn 1s 1.2s forwards;
+  }
+  .hero-scroll::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 50px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollLine 2s infinite;
+  }
+  @keyframes scrollLine {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.1); }
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    background: var(--navy2);
+    border-top: 1px solid rgba(201,168,76,0.15);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    padding: 2rem 6rem;
+    display: flex;
+    justify-content: space-around;
+    gap: 2rem;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--mist);
+    margin-top: 0.3rem;
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 7rem 6rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+  .section-tag {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, rgba(201,168,76,0.4), transparent);
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  .section-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  /* ABOUT */
+  .about { background: var(--navy2); }
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+  .about-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--ice);
+    border-left: 2px solid var(--gold);
+    padding-left: 2rem;
+    margin-bottom: 2rem;
+  }
+  .about-text {
+    font-size: 0.9rem;
+    line-height: 1.9;
+    color: var(--mist);
+  }
+  .about-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .differentiator {
+    background: rgba(201,168,76,0.04);
+    border: 1px solid rgba(201,168,76,0.12);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .differentiator:hover {
+    border-color: rgba(201,168,76,0.35);
+  }
+  .differentiator::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--gold);
+    opacity: 0.6;
+  }
+  .diff-title {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .diff-text {
+    font-size: 0.87rem;
+    line-height: 1.7;
+    color: var(--mist);
+  }
+
+  /* SKILLS */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+  .skill-item {
+    padding: 1.8rem;
+    background: var(--navy2);
+    border: 1px solid rgba(201,168,76,0.1);
+    position: relative;
+    transition: all 0.3s;
+    overflow: hidden;
+  }
+  .skill-item:hover {
+    border-color: rgba(201,168,76,0.3);
+    transform: translateY(-3px);
+  }
+  .skill-item::after {
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 60px; height: 60px;
+    background: radial-gradient(circle at top right, rgba(201,168,76,0.08), transparent 70%);
+  }
+  .skill-icon {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .skill-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 0.4rem;
+  }
+  .skill-desc {
+    font-size: 0.82rem;
+    color: var(--mist);
+    line-height: 1.7;
+  }
+
+  /* EXPERIENCE */
+  .experience { background: var(--navy2); }
+  .timeline {
+    position: relative;
+    padding-left: 3rem;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--gold), rgba(201,168,76,0.1));
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 3.5rem;
+    padding-left: 1.5rem;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.6s;
+  }
+  .timeline-item.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute; left: -3.5rem; top: 0.35rem;
+    width: 10px; height: 10px;
+    background: var(--gold);
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(201,168,76,0.5);
+  }
+  .timeline-date {
+    font-size: 0.7rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .timeline-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 0.2rem;
+  }
+  .timeline-org {
+    font-size: 0.82rem;
+    color: var(--mist);
+    margin-bottom: 1rem;
+  }
+  .timeline-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .timeline-list li {
+    font-size: 0.87rem;
+    color: var(--mist);
+    line-height: 1.7;
+    padding-left: 1.2rem;
+    position: relative;
+  }
+  .timeline-list li::before {
+    content: '—';
+    position: absolute; left: 0;
+    color: var(--gold);
+    opacity: 0.6;
+  }
+
+  /* PROJECTS */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 2rem;
+  }
+  .project-card {
+    background: var(--navy2);
+    border: 1px solid rgba(201,168,76,0.1);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .project-card:hover {
+    border-color: rgba(201,168,76,0.35);
+    transform: translateY(-5px);
+  }
+  .project-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--gold), transparent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s;
+  }
+  .project-card:hover::before { transform: scaleX(1); }
+
+  .project-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.5rem;
+    color: rgba(201,168,76,0.08);
+    line-height: 1;
+    position: absolute; top: 1.5rem; right: 2rem;
+  }
+  .project-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.68rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .project-status::before {
+    content: '';
+    display: block;
+    width: 6px; height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+  .project-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.3;
+  }
+  .project-desc {
+    font-size: 0.87rem;
+    color: var(--mist);
+    line-height: 1.75;
+  }
+  .project-tags {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin-top: auto;
+  }
+  .tag {
+    font-size: 0.68rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid rgba(201,168,76,0.25);
+    color: var(--gold);
+  }
+
+  /* CONTACT */
+  .contact {
+    background: var(--navy2);
+    text-align: center;
+  }
+  .contact-inner {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .contact-email {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-style: italic;
+    color: var(--gold);
+    text-decoration: none;
+    display: block;
+    margin: 2rem 0;
+    transition: opacity 0.3s;
+  }
+  .contact-email:hover { opacity: 0.7; }
+  .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+  .social-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--mist);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .social-link:hover { color: var(--gold); }
+  .social-icon {
+    width: 44px; height: 44px;
+    border: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    font-size: 1.1rem;
+  }
+  .social-link:hover .social-icon {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.06);
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 2rem 6rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(201,168,76,0.1);
+  }
+  footer p {
+    font-size: 0.75rem;
+    color: var(--mist);
+    letter-spacing: 1px;
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 4px;
+    color: rgba(201,168,76,0.4);
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Decorative elements */
+  .deco-circle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* Mobile */
+  @media (max-width: 900px) {
+    nav { padding: 1.2rem 2rem; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; }
+    .hero-left { padding: 7rem 2rem 2rem; }
+    .hero-right { height: 60vw; }
+    .hero-photo { width: 60%; }
+    .hero-scroll { left: 2rem; }
+    section { padding: 5rem 2rem; }
+    .stats-bar { padding: 2rem; }
+    .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .skills-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">WCT</a>
+  <ul class="nav-links">
+    <li><a href="#about">Sobre mí</a></li>
+    <li><a href="#skills">Habilidades</a></li>
+    <li><a href="#experience">Experiencia</a></li>
+    <li><a href="#projects">Proyectos</a></li>
+    <li><a href="#contact">Contacto</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">
+      <span>Gestor Público · Estratega · Líder</span>
+    </div>
+    <h1 class="hero-name">
+      Wilber<br><em>Chua</em><br>Turpo
+    </h1>
+    <p class="hero-title">Gestión Pública & Desarrollo Social</p>
+    <p class="hero-desc">
+      Estudiante de Gestión Pública en la UNAJ, con enfoque en diseño de proyectos de inversión social y modernización del Estado. Juliaca, Puno — Perú.
+    </p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn-primary"><span>Ver Proyectos</span></a>
+      <a href="#contact" class="btn-outline">Contactar</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-gold-line"></div>
+    <div class="hero-photo-bg"></div>
+    <img
+      src="https://i.ibb.co/placeholder/hero.jpg"
+      class="hero-photo"
+      id="heroPhoto"
+      alt="Wilber Chua Turpo"
+      onerror="this.style.display='none'; document.getElementById('heroFallback').style.display='flex';"
+    >
+    <!-- Fallback visual if photo doesn't load -->
+    <div id="heroFallback" style="display:none; position:relative; z-index:2; width:78%; max-width:420px; aspect-ratio:3/4; background: linear-gradient(160deg, rgba(37,99,235,0.12), rgba(201,168,76,0.08)); border: 1px solid rgba(201,168,76,0.15); align-items:center; justify-content:center; margin-bottom:0;">
+      <div style="text-align:center; padding:2rem;">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:6rem; color:rgba(201,168,76,0.15); line-height:1;">WCT</div>
+        <p style="font-size:0.75rem; letter-spacing:3px; color:var(--mist); text-transform:uppercase;">Wilber Chua Turpo</p>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll">Scroll</div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat reveal">
+    <div class="stat-num">UNAJ</div>
+    <div class="stat-label">Universidad Nacional de Juliaca</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">1</div>
+    <div class="stat-label">Proyecto de Inversión Pública</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">+3</div>
+    <div class="stat-label">Años de Disciplina Competitiva</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">PIP</div>
+    <div class="stat-label">Lineamientos Invierte.pe</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="section-header reveal">
+    <span class="section-tag">01 — Perfil</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="about-grid">
+    <div>
+      <h2 class="section-title reveal">Sobre <em>mí</em></h2>
+      <blockquote class="about-quote reveal">
+        "Me apasiona el diseño de proyectos que no solo cumplan la normativa técnica, sino que generen un cambio real en la calidad de vida de las comunidades."
+      </blockquote>
+      <p class="about-text reveal">
+        Soy estudiante de Gestión Pública y Desarrollo Social en la Universidad Nacional de Juliaca. Creo firmemente que una administración eficiente es la herramienta más poderosa para el progreso social, y aporto un enfoque práctico y resolutivo a cada desafío. Mi formación en competencia estratégica de alto rendimiento me ha dado una ventaja diferencial: proceso múltiples variables simultáneamente, mantengo la objetividad bajo presión y diagnostico cuellos de botella antes de que afecten la ejecución.
+      </p>
+    </div>
+    <div class="about-right">
+      <div class="differentiator reveal">
+        <div class="diff-title">⚡ Inteligencia Estratégica</div>
+        <div class="diff-text">Capacidad para procesar múltiples variables complejas simultáneamente y diseñar la ruta más eficiente hacia el objetivo, desarrollada en competencia a nivel mundial.</div>
+      </div>
+      <div class="differentiator reveal">
+        <div class="diff-title">🎯 Gestión de Crisis</div>
+        <div class="diff-text">Dominio del control emocional y la toma de decisiones lógica en escenarios de alta presión. Resistencia al estrés certificada por competencia profesional de alto rendimiento.</div>
+      </div>
+      <div class="differentiator reveal">
+        <div class="diff-title">📊 Análisis Predictivo</div>
+        <div class="diff-text">Habilidad para anticipar escenarios basados en patrones de datos, competencia clave para el planeamiento estratégico según lineamientos CEPLAN.</div>
+      </div>
+      <div class="differentiator reveal">
+        <div class="diff-title">🔄 Mejora Continua (Kaizen)</div>
+        <div class="diff-text">Hábito de auditoría constante de procesos para identificar y corregir errores de ejecución de manera ágil y sistemática.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-header reveal">
+    <span class="section-tag">02 — Competencias</span>
+    <div class="section-line"></div>
+  </div>
+  <h2 class="section-title reveal">Habilidades <em>clave</em></h2>
+  <br><br>
+  <div class="skills-grid">
+    <div class="skill-item reveal">
+      <div class="skill-icon">🏛️</div>
+      <div class="skill-name">Gestión Pública & Estado</div>
+      <div class="skill-desc">Conocimiento en modernización del Estado, planeamiento estratégico y normativa pública peruana. Enfoque en eficiencia administrativa y servicio ciudadano.</div>
+    </div>
+    <div class="skill-item reveal">
+      <div class="skill-icon">📐</div>
+      <div class="skill-name">Formulación de Proyectos (Invierte.pe)</div>
+      <div class="skill-desc">Elaboración técnica de Proyectos de Inversión Pública siguiendo los lineamientos del sistema Invierte.pe del MEF peruano.</div>
+    </div>
+    <div class="skill-item reveal">
+      <div class="skill-icon">♟️</div>
+      <div class="skill-name">Pensamiento Estratégico</div>
+      <div class="skill-desc">Análisis multivariable, planificación táctica y anticipación de escenarios. Desarrollado en competencia de estrategia lógica de alto nivel internacional.</div>
+    </div>
+    <div class="skill-item reveal">
+      <div class="skill-icon">📊</div>
+      <div class="skill-name">Control Financiero & Auditoría</div>
+      <div class="skill-desc">Conciliación de caja, control de inventarios, trazabilidad de activos y supervisión de movimientos financieros en entornos operativos reales.</div>
+    </div>
+    <div class="skill-item reveal">
+      <div class="skill-icon">🤝</div>
+      <div class="skill-name">Liderazgo & Trabajo en Equipo</div>
+      <div class="skill-desc">Capacidad de mantener el liderazgo y la objetividad en situaciones de alta incertidumbre. Disciplina y ética de trabajo probadas bajo estándares de competencia profesional.</div>
+    </div>
+    <div class="skill-item reveal">
+      <div class="skill-icon">🧩</div>
+      <div class="skill-name">Resolución de Problemas</div>
+      <div class="skill-desc">Diagnóstico ágil de cuellos de botella, optimización de recursos críticos y enfoque orientado a resultados tangibles en contextos de presión.</div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="experience" id="experience">
+  <div class="section-header reveal">
+    <span class="section-tag">03 — Trayectoria</span>
+    <div class="section-line"></div>
+  </div>
+  <h2 class="section-title reveal">Educación & <em>Experiencia</em></h2>
+  <br><br>
+  <div class="timeline">
+
+    <div class="timeline-item">
+      <div class="timeline-date">Actual · En curso</div>
+      <div class="timeline-title">Gestión Pública y Desarrollo Social</div>
+      <div class="timeline-org">Universidad Nacional de Juliaca (UNAJ) — Juliaca, Puno</div>
+      <ul class="timeline-list">
+        <li>Formación en modernización del Estado y planeamiento estratégico bajo estándares CEPLAN.</li>
+        <li>Especialización en diseño y evaluación de proyectos de inversión pública con Invierte.pe.</li>
+        <li>Desarrollo de capacidades para el análisis de políticas públicas orientadas al desarrollo social.</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">Formación Continua</div>
+      <div class="timeline-title">Deportista de Alto Rendimiento — Estrategia Competitiva</div>
+      <div class="timeline-org">Competencia Profesional · Nivel Internacional</div>
+      <ul class="timeline-list">
+        <li>Competencia a los más altos niveles de estrategia lógica a nivel mundial, desarrollando resistencia cognitiva excepcional.</li>
+        <li>Velocidad de procesamiento de datos y toma de decisiones en tiempo real bajo condiciones de máxima presión.</li>
+        <li>Disciplina de mejora continua (Kaizen) aplicada sistemáticamente a procesos de alto desempeño.</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">Experiencia Laboral</div>
+      <div class="timeline-title">Auxiliar de Liquidación y Control de Operaciones</div>
+      <div class="timeline-org">Sector Combustibles / Estación de Servicio — Juliaca, Perú</div>
+      <ul class="timeline-list">
+        <li>Responsable de la conciliación diaria de caja y custodia de altos volúmenes de flujo de efectivo.</li>
+        <li>Auditoría de ingresos y salidas de activos, asegurando trazabilidad exacta entre stock físico y registros contables.</li>
+        <li>Reducción de discrepancias operativas mediante registro detallado y supervisión de movimientos financieros.</li>
+        <li>Desarrollo de habilidades transferibles: responsabilidad, control bajo presión y gestión de recursos críticos.</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header reveal">
+    <span class="section-tag">04 — Proyectos</span>
+    <div class="section-line"></div>
+  </div>
+  <h2 class="section-title reveal">Proyectos <em>Destacados</em></h2>
+  <br><br>
+  <div class="projects-grid">
+    <div class="project-card reveal">
+      <div class="project-num">01</div>
+      <div class="project-status">En Desarrollo</div>
+      <div class="project-title">Mejoramiento del Servicio Integral — I.E.S. San Francisco de Borja</div>
+      <div class="project-desc">
+        Formulación técnica de Proyecto de Inversión Pública (PIP) desde cero, siguiendo los lineamientos del sistema Invierte.pe del MEF. El proyecto busca optimizar la infraestructura educativa del nivel superior en Juliaca, beneficiando directamente a la comunidad estudiantil y mejorando la calidad del servicio educativo en la región.
+      </div>
+      <div class="project-tags">
+        <span class="tag">Invierte.pe</span>
+        <span class="tag">PIP</span>
+        <span class="tag">Infraestructura Educativa</span>
+        <span class="tag">Juliaca</span>
+      </div>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-num">02</div>
+      <div class="project-status">Formación Universitaria</div>
+      <div class="project-title">Análisis de Modernización del Estado</div>
+      <div class="project-desc">
+        Investigación y análisis de procesos de modernización estatal en el contexto peruano, con enfoque en la eficiencia administrativa de gobiernos locales y regionales. Aplicación de herramientas de planeamiento estratégico y análisis de brechas en servicios públicos.
+      </div>
+      <div class="project-tags">
+        <span class="tag">CEPLAN</span>
+        <span class="tag">Planeamiento Estratégico</span>
+        <span class="tag">Políticas Públicas</span>
+      </div>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-num">03</div>
+      <div class="project-status">Competitivo · Internacional</div>
+      <div class="project-title">Estrategia Cognitiva de Alto Rendimiento</div>
+      <div class="project-desc">
+        Participación en competencia de estrategia lógica a nivel internacional, desarrollando un sistema de análisis multivariable y gestión de incertidumbre aplicable a la gestión de proyectos. Habilidades directamente transferibles al diagnóstico de cuellos de botella en procesos administrativos.
+      </div>
+      <div class="project-tags">
+        <span class="tag">Estrategia</span>
+        <span class="tag">Alto Rendimiento</span>
+        <span class="tag">Análisis Predictivo</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="contact-inner">
+    <div class="section-header reveal" style="justify-content:center;">
+      <span class="section-tag">05 — Contacto</span>
+    </div>
+    <h2 class="section-title reveal" style="font-size:clamp(2.5rem,5vw,4rem);">
+      Trabajemos <em>juntos</em>
+    </h2>
+    <p class="reveal" style="color:var(--mist); margin-top:1rem; font-size:0.9rem; line-height:1.8;">
+      ¿Tienes un proyecto, propuesta o simplemente quieres conectar?<br>Estoy abierto a colaboraciones en gestión pública y desarrollo social.
+    </p>
+
+    <div class="social-links reveal">
+      <a href="https://www.linkedin.com/in/wilber-chua-turpo-33453b405" target="_blank" class="social-link">
+        <div class="social-icon">in</div>
+        LinkedIn
+      </a>
+      <a href="https://github.com/wilber-chua" target="_blank" class="social-link">
+        <div class="social-icon">gh</div>
+        GitHub
+      </a>
+      <a href="https://www.instagram.com/wilber.chua/" target="_blank" class="social-link">
+        <div class="social-icon">ig</div>
+        Instagram
+      </a>
+      <a href="https://www.facebook.com/wil.chua.turpo.2025/" target="_blank" class="social-link">
+        <div class="social-icon">fb</div>
+        Facebook
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 Wilber Chua Turpo — Juliaca, Puno, Perú</p>
+  <div class="footer-logo">WCT</div>
+  <p>Gestión Pública & Desarrollo Social</p>
+</footer>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const cursorRing = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top = my + 'px';
+  });
+  function animRing() {
+    rx += (mx - rx) * 0.15;
+    ry += (my - ry) * 0.15;
+    cursorRing.style.left = rx + 'px';
+    cursorRing.style.top = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal, .timeline-item');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Hero photo: use the uploaded image (image 2 - suit)
+  // Since we can't embed the actual file in this static HTML directly,
+  // we show the fallback with initials
+  document.getElementById('heroFallback').style.display = 'flex';
+  document.getElementById('heroPhoto').style.display = 'none';
+</script>
+</body>
+</html>
